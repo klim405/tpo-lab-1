@@ -17,11 +17,11 @@ public class BTreeTest {
         btree.insert(5);
         btree.insert(7);
         btree.insert(8);
-        assertTrue(btree.contain(10));
-        assertTrue(btree.contain(12));
-        assertTrue(btree.contain(5));
-        assertTrue(btree.contain(7));
-        assertTrue(btree.contain(8));
+        assertTrue(btree.contains(10));
+        assertTrue(btree.contains(12));
+        assertTrue(btree.contains(5));
+        assertTrue(btree.contains(7));
+        assertTrue(btree.contains(8));
     }
 
     @Test
@@ -33,8 +33,8 @@ public class BTreeTest {
         btree.insert(5);
         btree.insert(4);
         btree.insert(8);
-        assertTrue(btree.contain(12));
-        assertFalse(btree.contain(0));
-        assertFalse(btree.contain(100));
+        assertTrue(btree.contains(12));
+        assertFalse(btree.contains(0));
+        assertFalse(btree.contains(100));
     }
 }

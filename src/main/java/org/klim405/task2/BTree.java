@@ -1,159 +1,107 @@
 package org.klim405.task2;
 
 public class BTree {
-
-    private final int t;
-
-    // Создаем узел
-    public class Node {
-        int n;
-        int[] key = new int[2 * t - 1];
-        Node[] child = new Node[2 * t];
-        boolean leaf = true;
-
-        public int find(int k) {
-            for (int i = 0; i < this.n; i++) {
-                if (this.key[i] == k) {
-                    return i;
-                }
-            }
-            return -1;
-        }
-    }
+    final private int t;
+    private Node root;
 
     public BTree(int t) {
         this.t = t;
-        root = new Node();
-        root.n = 0;
-        root.leaf = true;
+        this.root = new Node(true);
     }
 
-    private Node root;
+    public class Node {
+        public int[] key;
+        public Node[] child;
+        public boolean leaf;
+        public int n;
 
-    // Поиск ключа
-    private Node search(Node x, int key) {
-        int i = 0;
-        if (x == null)
-            return x;
-        for (i = 0; i < x.n; i++) {
-            if (key < x.key[i]) {
-                break;
-            }
-            if (key == x.key[i]) {
-                return x;
-            }
+        public Node(boolean leaf) {
+            key = new int[2*t-1];
+            child = new Node[2*t];
+            this.leaf = leaf;
+            n = 0;
         }
-        if (x.leaf) {
+    }
+    public Integer search(Node x, int k) {
+        int i = 1;
+        while (i <= x.n && k > x.key[i-1]) {
+            i = i + 1;
+        }
+        if (i <= x.n && k == x.key[i-1]) {
+            return x.key[i-1];
+        } else if (x.leaf) {
             return null;
         } else {
-            return search(x.child[i], key);
+            return search(x.child[i-1], k);
         }
     }
 
-    // Разбиение узла
-    private void split(Node x, int pos, Node y) {
-        Node z = new Node();
-        z.leaf = y.leaf;
+    public Integer search(int k) {
+        return search(root, k);
+    }
+
+    public boolean contains(int k) {
+        return search(k) != null;
+    }
+
+    protected void splitChild(Node x, int i) {
+        Node y = x.child[i-1];
+        Node z = new Node(y.leaf);
         z.n = t - 1;
+        for (int j = 1; j <= t-1 ; j++) {
+            z.key[j-1] = y.key[j-1+t];
+        }
         if (!y.leaf) {
-            for (int j = 0; j < t; j++) {
-                z.child[j] = y.child[j + t];
+            for (int j = 1; j <= t; j++) {
+                z.child[j-1] = y.child[j-1+t];
             }
         }
         y.n = t - 1;
-        for (int j = x.n; j >= pos + 1; j--) {
-            x.child[j + 1] = x.child[j];
+        for (int j = x.n + 1; j >= i + 1; j--) {
+            x.child[j] = x.child[j-1];
         }
-        x.child[pos + 1] = z;
-
-        for (int j = x.n - 1; j >= pos; j--) {
-            x.key[j + 1] = x.key[j];
+        x.child[i] = z;
+        for (int j = x.n; j >= i; j--) {
+            x.key[j] = x.key[j-1];
         }
-        x.key[pos] = y.key[t - 1];
+        x.key[i-1] = y.key[t-1];
         x.n = x.n + 1;
     }
 
-    // Вставка значения
-    public void insert(final int key) {
-        Node r = root;
-        if (r.n == 2 * t - 1) {
-            Node s = new Node();
-            root = s;
-            s.leaf = false;
-            s.n = 0;
-            s.child[0] = r;
-            split(s, 0, r);
-            insertValue(s, key);
-        } else {
-            insertValue(r, key);
-        }
-    }
-
-    // Вставка узла
-    private void insertValue(Node x, int k) {
+    public void insertNonFull(Node x, int k) {
+        int i = x.n;
         if (x.leaf) {
-            int i = 0;
-            for (i = x.n - 1; i >= 0 && k < x.key[i]; i--) {
-                x.key[i + 1] = x.key[i];
+            while (i >= 1 && k < x.key[i-1]) {
+                x.key[i] = x.key[i-1];
+                i = i - 1;
             }
-            x.key[i + 1] = k;
+            x.key[i] = k;
             x.n = x.n + 1;
         } else {
-            int i = 0;
-            for (i = x.n - 1; i >= 0 && k < x.key[i]; i--) {
+            while (i >= 1 && k < x.key[i-1]) {
+                i = i - 1;
             }
-            i++;
-            Node tmp = x.child[i];
-            if (tmp.n == 2 * t - 1) {
-                split(x, i, tmp);
-                if (k > x.key[i]) {
-                    i++;
+            i = i + 1;
+            if (x.child[i-1].n == 2*t - 1) {
+                splitChild(x, i);
+                if (k > x.key[i-1]) {
+                    i = i + 1;
                 }
             }
-            insertValue(x.child[i], k);
-        }
-
-    }
-
-    public void show() {
-        show(root);
-    }
-
-    // Вывод на экран
-    private void show(Node x) {
-        if (x == null) return;
-        for (int i = 0; i < x.n; i++) {
-            System.out.print(x.key[i] + " ");
-        }
-        if (!x.leaf) {
-            for (int i = 0; i < x.n + 1; i++) {
-                show(x.child[i]);
-            }
+            insertNonFull(x.child[i-1], k);
         }
     }
 
-    // Проверка, содержится ли ключ
-    public boolean contain(int k) {
-        return this.search(root, k) != null;
-    }
-
-    public static void main(String[] args) {
-        BTree b = new BTree(3);
-        b.insert(8);
-        b.insert(9);
-        b.insert(10);
-        b.insert(11);
-        b.insert(12);
-        b.insert(13);
-        b.insert(14);
-
-        b.show();
-
-        if (b.contain(12)) {
-            System.out.println("\nнайдено");
+    public void insert(int k) {
+        Node r = root;
+        if (r.n == 2*t - 1) {
+            Node s = new Node(false);
+            s.child[0] = r;
+            root = s;
+            splitChild(s, 1);
+            insertNonFull(s, k);
         } else {
-            System.out.println("\nне найдено");
+            insertNonFull(r, k);
         }
-        ;
     }
 }
