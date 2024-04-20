@@ -23,8 +23,8 @@ public class TangentTest {
     }
 
     @ParameterizedTest(name = "tan({0})")
-    @DisplayName("Проверка значений котангенса")
-    @ValueSource(doubles = {-2 * Math.PI, -Math.PI, 0, Math.PI, Math.PI / 6, Math.PI / 4, 2 * Math.PI})
+    @DisplayName("Проверка значений тангенса")
+    @ValueSource(doubles = {-2 * Math.PI, -Math.PI, 0, Math.PI, Math.PI / 6, Math.PI / 2 + 1E-4, Math.PI / 4, 2 * Math.PI})
     public void testTan(double param) {
         assertEquals(Math.tan(param), Tangent.calc(param), 1E-7);
     }
